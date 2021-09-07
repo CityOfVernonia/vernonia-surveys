@@ -1,0 +1,38 @@
+{
+  "name": "vernonia-surveys",
+  "version": "1.0.0",
+  "description": "A tool for downloading Columbia County record surveys within Vernonia spatial extent and converting to PDF.",
+  "main": "index.js",
+  "scripts": {
+    "prettier": "prettier --write \"index.js\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CityOfVernonia/vernonia-surveys.git"
+  },
+  "author": "COV-GIS",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CityOfVernonia/vernonia-surveys/issues"
+  },
+  "homepage": "https://github.com/CityOfVernonia/vernonia-surveys#readme",
+  "dependencies": {
+    "@esri/arcgis-rest-auth": "^3.3.0",
+    "@esri/arcgis-rest-feature-layer": "^3.3.0",
+    "@esri/arcgis-rest-request": "^3.3.0",
+    "chalk": "^4.1.2",
+    "cross-fetch": "^3.1.4",
+    "download": "^8.0.0",
+    "fs-extra": "^10.0.0",
+    "isomorphic-form-data": "^2.0.0",
+    "prettier": "^2.3.2"
+  },
+  "prettier": {
+    "semi": true,
+    "singleQuote": true,
+    "trailingComma": "all",
+    "printWidth": 120,
+    "tabWidth": 2
+  }
+}
