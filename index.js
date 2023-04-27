@@ -1,10 +1,11 @@
-require('cross-fetch/polyfill');
-require('isomorphic-form-data');
-const fs = require('fs-extra');
-const { exec } = require('child_process');
-const download = require('download');
-const chalk = require('chalk');
-const { queryFeatures } = require('@esri/arcgis-rest-feature-layer');
+import fs from 'fs-extra';
+import util from 'node:util';
+import { exec } from 'child_process';
+import download from 'download';
+import chalk from 'chalk';
+import { queryFeatures } from '@esri/arcgis-rest-feature-service';
+import imgToPDF from 'image-to-pdf';
+const _exec = util.promisify(exec);
 
 const featureServiceUrl =
   'https://gis.columbiacountymaps.com/server/rest/services/BaseData/Survey_Research/FeatureServer/0';
@@ -26,18 +27,29 @@ const vernoniaSpatialExtent = {
 
 /**
  * Convert tiff to pdf.
- * @param {*} file 
- * @returns 
+ * @param {*} file
+ * @returns
  */
 const tiff2pdf = async (file) => {
   const parts = file.split('.');
-
   if (parts[1] !== 'tif' && parts[1] !== 'tiff') {
     console.log(chalk.red(`${file} is not a tiff file.`));
     return;
   }
+  await _exec(`tiff2pdf -z -o ${parts[0]}.pdf ${file}`);
+};
 
-  exec(`tiff2pdf -z -o ${parts[0]}.pdf ${file}`);
+const jpg2pdf = async (file) => {
+  const parts = file.split('.');
+  if (parts[1] !== 'jpg' && parts[1] !== 'jpeg') {
+    console.log(chalk.red(`${file} is not a jpeg file.`));
+    return;
+  }
+  const stream = fs.createWriteStream(`${parts[0]}.pdf`)
+  stream.on('finish', () => {
+    fs.remove(file);
+  });
+  imgToPDF([file]).pipe(stream);
 };
 
 /**
@@ -50,7 +62,18 @@ const fileWrite = async (SVY_IMAGE, data) => {
 
   fs.writeFile(file, data)
     .then(async () => {
-      await tiff2pdf(file);
+      const type = file.split('.')[1];
+      if (type === 'tif' || type === 'tiff') {
+        try {
+          await tiff2pdf(file);
+          fs.remove(file);
+        } catch (error) {
+          console.log(chalk.red(`tiff2pdf ${SVY_IMAGE} write failed.`, error));
+        }
+      }
+      if (type === 'jpg' || type === 'jpeg') {
+        jpg2pdf(file);
+      }
     })
     .catch((error) => {
       console.log(chalk.red(`${SVY_IMAGE} write failed.`, error));
@@ -79,8 +102,7 @@ const fileCheck = (feature) => {
   const {
     attributes: { SVY_IMAGE },
   } = feature;
-
-  fs.pathExists(`surveys/${SVY_IMAGE}`)
+  fs.exists(`surveys/${SVY_IMAGE}`.replace('.tif', '.pdf').replace('.tiff', '.pdf'))
     .then((exists) => {
       if (!exists) {
         fileDownload(SVY_IMAGE);
@@ -105,6 +127,7 @@ queryFeatures({
   .then((results) => {
     console.log(chalk.yellow(`${results.features.length} results`));
     results.features.forEach(fileCheck);
+    // testing
     // fileCheck(results.features[0]);
   })
   .catch((error) => {
