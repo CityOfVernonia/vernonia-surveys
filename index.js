@@ -129,6 +129,20 @@ queryFeatures({
     results.features.forEach(fileCheck);
     // testing
     // fileCheck(results.features[0]);
+
+    queryFeatures({
+      url: featureServiceUrl,
+      geometry: vernoniaSpatialExtent,
+      returnGeometry: true,
+      outFields: ['*'],
+      spatialRel: 'esriSpatialRelIntersects',
+      geometryType: 'esriGeometryPolygon',
+      f: 'geojson',
+    }).then((geojson) => {
+      // console.log(geojson);
+      fs.writeFile('surveys.geojson', JSON.stringify(geojson));
+    });
+
   })
   .catch((error) => {
     console.log(error);
