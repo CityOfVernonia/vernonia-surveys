@@ -39,13 +39,13 @@ const tiff2pdf = async (file) => {
   await _exec(`tiff2pdf -z -o ${parts[0]}.pdf ${file}`);
 };
 
-const jpg2pdf = async (file) => {
+const jpeg2pdf = async (file) => {
   const parts = file.split('.');
   if (parts[1] !== 'jpg' && parts[1] !== 'jpeg') {
     console.log(chalk.red(`${file} is not a jpeg file.`));
     return;
   }
-  const stream = fs.createWriteStream(`${parts[0]}.pdf`)
+  const stream = fs.createWriteStream(`${parts[0]}.pdf`);
   stream.on('finish', () => {
     fs.remove(file);
   });
@@ -72,7 +72,7 @@ const fileWrite = async (SVY_IMAGE, data) => {
         }
       }
       if (type === 'jpg' || type === 'jpeg') {
-        jpg2pdf(file);
+        jpeg2pdf(file);
       }
     })
     .catch((error) => {
@@ -102,7 +102,13 @@ const fileCheck = (feature) => {
   const {
     attributes: { SVY_IMAGE },
   } = feature;
-  fs.exists(`surveys/${SVY_IMAGE}`.replace('.tif', '.pdf').replace('.tiff', '.pdf'))
+  fs.exists(
+    `surveys/${SVY_IMAGE}`
+      .replace('.tif', '.pdf')
+      .replace('.tiff', '.pdf')
+      .replace('.jpg', '.pdf')
+      .replace('.jpeg', '.pdf'),
+  )
     .then((exists) => {
       if (!exists) {
         fileDownload(SVY_IMAGE);
@@ -127,9 +133,6 @@ queryFeatures({
   .then((results) => {
     console.log(chalk.yellow(`${results.features.length} results`));
     results.features.forEach(fileCheck);
-    // testing
-    // fileCheck(results.features[0]);
-
     queryFeatures({
       url: featureServiceUrl,
       geometry: vernoniaSpatialExtent,
@@ -139,10 +142,8 @@ queryFeatures({
       geometryType: 'esriGeometryPolygon',
       f: 'geojson',
     }).then((geojson) => {
-      // console.log(geojson);
       fs.writeFile('surveys.geojson', JSON.stringify(geojson));
     });
-
   })
   .catch((error) => {
     console.log(error);
