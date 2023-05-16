@@ -104,8 +104,8 @@ const fileCheck = (feature) => {
   } = feature;
   fs.exists(
     `surveys/${SVY_IMAGE}`
-      .replace('.tif', '.pdf')
       .replace('.tiff', '.pdf')
+      .replace('.tif', '.pdf')
       .replace('.jpg', '.pdf')
       .replace('.jpeg', '.pdf'),
   )
