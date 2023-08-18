@@ -5,6 +5,7 @@ import download from 'download';
 import chalk from 'chalk';
 import { queryFeatures } from '@esri/arcgis-rest-feature-service';
 import imgToPDF from 'image-to-pdf';
+import { DateTime } from 'luxon';
 const _exec = util.promisify(exec);
 
 const featureServiceUrl =
@@ -137,11 +138,78 @@ queryFeatures({
       url: featureServiceUrl,
       geometry: vernoniaSpatialExtent,
       returnGeometry: true,
-      outFields: ['*'],
+      outFields: [
+        'Client',
+        'Comments',
+        'FileDate',
+        'Firm',
+        'NumberofSh',
+        'PLATID',
+        'SURVEYID',
+        'SVY_IMAGE',
+        'SurveyDate',
+        'SurveyType',
+      ],
       spatialRel: 'esriSpatialRelIntersects',
       geometryType: 'esriGeometryPolygon',
       f: 'geojson',
     }).then((geojson) => {
+      geojson.features.forEach((feature) => {
+        for (const property in feature.properties) {
+          if (feature.properties.hasOwnProperty(property) && feature.properties[property] === ' ')
+            feature.properties[property] = null;
+
+          if (feature.properties.hasOwnProperty(property) && feature.properties[property] === 'None Given')
+            feature.properties[property] = null;
+        }
+
+        Object.defineProperty(
+          feature.properties,
+          'Sheets',
+          Object.getOwnPropertyDescriptor(feature.properties, 'NumberofSh'),
+        );
+        delete feature.properties['NumberofSh'];
+
+        Object.defineProperty(
+          feature.properties,
+          'Plat',
+          Object.getOwnPropertyDescriptor(feature.properties, 'PLATID'),
+        );
+        delete feature.properties['PLATID'];
+
+        Object.defineProperty(
+          feature.properties,
+          'Survey',
+          Object.getOwnPropertyDescriptor(feature.properties, 'SURVEYID'),
+        );
+        delete feature.properties['SURVEYID'];
+
+        feature.properties.SVY_IMAGE = `https://cityofvernonia.github.io/vernonia-surveys/surveys/${feature.properties.SVY_IMAGE.replace(
+          '.tiff',
+          '.pdf',
+        )
+          .replace('.tif', '.pdf')
+          .replace('.jpg', '.pdf')
+          .replace('.jpeg', '.pdf')}`;
+
+        Object.defineProperty(
+          feature.properties,
+          'SurveyUrl',
+          Object.getOwnPropertyDescriptor(feature.properties, 'SVY_IMAGE'),
+        );
+        delete feature.properties['SVY_IMAGE'];
+
+        if (feature.properties.FileDate)
+          feature.properties.FileDate = DateTime.fromMillis(feature.properties.FileDate)
+            .toUTC()
+            .toLocaleString(DateTime.DATE_SHORT);
+
+        if (feature.properties.SurveyDate)
+          feature.properties.SurveyDate = DateTime.fromMillis(feature.properties.SurveyDate)
+            .toUTC()
+            .toLocaleString(DateTime.DATE_SHORT);
+      });
+
       fs.writeFile('surveys.geojson', JSON.stringify(geojson));
     });
   })
