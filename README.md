@@ -1,31 +1,31 @@
 # vernonia-surveys
 
-A tool for downloading Columbia County record surveys within Vernonia spatial extent and converting to PDF.
+A tool for downloading Columbia County record surveys within Vernonia spatial extent, converting survey images to PDF, and [hosting](https://cityofvernonia.github.io/vernonia-surveys/) it all for use in web applications.
 
 Check out the _Survey Search_ tool in [Vernonia Map](https://map.vernonia-or.gov/) to quickly find and view PDFs of surveys related to a tax lot.
 
 ![Survey Search](/screenshot.jpg 'Survey Search')
 
-## use
+## Use
 
-### geometry
+### Geometry
 
-[surveys.geojson](https://cityofvernonia.github.io/vernonia-surveys/surveys.geojson)
+[https://cityofvernonia.github.io/vernonia-surveys/surveys.geojson](https://cityofvernonia.github.io/vernonia-surveys/surveys.geojson)
 
-### pdfs
+### PDFs
 
 ```
 https://cityofvernonia.github.io/vernonia-surveys/surveys/<Survey>.pdf
 ```
 
-or use the _SurveyUrl_ property/attribute
+Or use the _SurveyUrl_ property/attribute.
 
-### properties/attributes
+### Properties/attributes
 
 ```json
 {
   "type": "Feature",
-  "geometry": { ... },
+  "geometry": {},
   "properties": {
     "Client": "Weyerhaeuser NR Company",
     "Comments": "Two unsurveyed 80 acre parcels",
@@ -41,27 +41,27 @@ or use the _SurveyUrl_ property/attribute
 }
 ```
 
-## update
+## Update
 
-### requirements
+### Requirements
 
-[libtiff](http://www.libtiff.org/)
+[libtiff](http://www.libtiff.org/) available via command line.
 
-### install
+### Install
 
 ```shell
 npm install
 ```
 
-### run
+### Run
 
 ```shell
 node index.js
 ```
 
-### pages
+### Pages
 
-don't forget to merge and push `gh-pages`
+Don't forget to merge and push `gh-pages`.
 
 ---
 
