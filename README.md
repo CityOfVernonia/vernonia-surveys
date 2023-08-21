@@ -4,7 +4,7 @@ A tool for downloading Columbia County record surveys within Vernonia spatial ex
 
 Check out the _Survey Search_ tool in [Vernonia Map](https://map.vernonia-or.gov/) to quickly find and view PDFs of surveys related to a tax lot.
 
-![Survey Search](/screenshot.jpg 'Survey Search')
+![Survey Search](screenshot.jpg 'Survey Search')
 
 ## Use
 
