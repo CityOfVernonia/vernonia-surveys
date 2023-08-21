@@ -149,23 +149,21 @@ const createGeoJSON = async () => {
     geojson.features.forEach((feature) => {
       const { properties } = feature;
 
+      // remove unuseful string valaues
       for (const property in properties) {
         if (properties.hasOwnProperty(property) && properties[property] === ' ') properties[property] = null;
-
         if (properties.hasOwnProperty(property) && properties[property] === '') properties[property] = null;
-
         if (properties.hasOwnProperty(property) && properties[property] === 'None Given') properties[property] = null;
       }
 
+      // create friendlier properties and set values
       Object.defineProperty(properties, 'Sheets', Object.getOwnPropertyDescriptor(properties, 'NumberofSh'));
       delete properties['NumberofSh'];
-
       Object.defineProperty(properties, 'Subdivision', Object.getOwnPropertyDescriptor(properties, 'Subdivisio'));
       delete properties['Subdivisio'];
-
       Object.defineProperty(properties, 'SurveyId', Object.getOwnPropertyDescriptor(properties, 'SURVEYID'));
       delete properties['SURVEYID'];
-
+      // url to PDF
       properties.SVY_IMAGE = `https://cityofvernonia.github.io/vernonia-surveys/surveys/${properties.SVY_IMAGE.replace(
         '.tiff',
         '.pdf',
@@ -173,26 +171,27 @@ const createGeoJSON = async () => {
         .replace('.tif', '.pdf')
         .replace('.jpg', '.pdf')
         .replace('.jpeg', '.pdf')}`;
-
       Object.defineProperty(properties, 'SurveyUrl', Object.getOwnPropertyDescriptor(properties, 'SVY_IMAGE'));
       delete properties['SVY_IMAGE'];
 
+      // standardize properites
       if (!properties.Client) properties.Client = 'Unknown';
-
       if (!properties.Comments) properties.Comments = 'None';
-
       if (!properties.Firm) properties.Firm = 'Unknown';
-
       if (!properties.SurveyType) properties.SurveyType = 'Unknown';
+      if (properties.SurveyType === 'SURVEY') properties.SurveyType = 'Survey';
+      // ensure `Subdivision` is `null` if not a subdivision 
+      if (properties.SurveyType !== 'Subdivision') properties.Subdivision = null;
 
+      // timestamp for sorting
       properties.Timestamp = properties.SurveyDate ? properties.SurveyDate : 0;
 
+      // Date fields to `MM/DD/YYYY` strings
       if (properties.FileDate) {
         properties.FileDate = DateTime.fromMillis(properties.FileDate).toUTC().toLocaleString(DateTime.DATE_SHORT);
       } else {
         properties.FileDate = 'Unknown';
       }
-
       if (properties.SurveyDate) {
         properties.SurveyDate = DateTime.fromMillis(properties.SurveyDate).toUTC().toLocaleString(DateTime.DATE_SHORT);
       } else {
