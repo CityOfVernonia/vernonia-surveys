@@ -34,7 +34,7 @@ Or use the _SurveyUrl_ property/attribute.
     "SurveyDate": "2/8/2016",
     "SurveyType": "Partition",
     "Sheets": 2,
-    "Plat": null,
+    "PlatName": null,
     "Survey": "PP2016-04",
     "SurveyUrl": "https://cityofvernonia.github.io/vernonia-surveys/surveys/PP2016-04.pdf"
   }

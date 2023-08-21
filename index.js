@@ -121,20 +121,11 @@ const fileCheck = (feature) => {
 };
 
 /**
- * Query surveys within spatial extent.
+ * Download survey geojson, properties transformations, and write `surveys.geojson`.
  */
-queryFeatures({
-  url: featureServiceUrl,
-  geometry: vernoniaSpatialExtent,
-  returnGeometry: false,
-  outFields: ['SVY_IMAGE'],
-  spatialRel: 'esriSpatialRelIntersects',
-  geometryType: 'esriGeometryPolygon',
-})
-  .then((results) => {
-    console.log(chalk.yellow(`${results.features.length} results`));
-    results.features.forEach(fileCheck);
-    queryFeatures({
+const createGeoJSON = async () => {
+  try {
+    const geojson = await queryFeatures({
       url: featureServiceUrl,
       geometry: vernoniaSpatialExtent,
       returnGeometry: true,
@@ -153,70 +144,81 @@ queryFeatures({
       spatialRel: 'esriSpatialRelIntersects',
       geometryType: 'esriGeometryPolygon',
       f: 'geojson',
-    }).then((geojson) => {
-      geojson.features.forEach((feature) => {
-        for (const property in feature.properties) {
-          if (feature.properties.hasOwnProperty(property) && feature.properties[property] === ' ')
-            feature.properties[property] = null;
-
-          if (feature.properties.hasOwnProperty(property) && feature.properties[property] === 'None Given')
-            feature.properties[property] = null;
-        }
-
-        Object.defineProperty(
-          feature.properties,
-          'Sheets',
-          Object.getOwnPropertyDescriptor(feature.properties, 'NumberofSh'),
-        );
-        delete feature.properties['NumberofSh'];
-
-        Object.defineProperty(
-          feature.properties,
-          'Plat',
-          Object.getOwnPropertyDescriptor(feature.properties, 'PLATID'),
-        );
-        delete feature.properties['PLATID'];
-
-        Object.defineProperty(
-          feature.properties,
-          'Survey',
-          Object.getOwnPropertyDescriptor(feature.properties, 'SURVEYID'),
-        );
-        delete feature.properties['SURVEYID'];
-
-        feature.properties.SVY_IMAGE = `https://cityofvernonia.github.io/vernonia-surveys/surveys/${feature.properties.SVY_IMAGE.replace(
-          '.tiff',
-          '.pdf',
-        )
-          .replace('.tif', '.pdf')
-          .replace('.jpg', '.pdf')
-          .replace('.jpeg', '.pdf')}`;
-
-        Object.defineProperty(
-          feature.properties,
-          'SurveyUrl',
-          Object.getOwnPropertyDescriptor(feature.properties, 'SVY_IMAGE'),
-        );
-        delete feature.properties['SVY_IMAGE'];
-
-        if (feature.properties.FileDate)
-          feature.properties.FileDate = DateTime.fromMillis(feature.properties.FileDate)
-            .toUTC()
-            .toLocaleString(DateTime.DATE_SHORT);
-
-        if (feature.properties.SurveyDate)
-          feature.properties.SurveyDate = DateTime.fromMillis(feature.properties.SurveyDate)
-            .toUTC()
-            .toLocaleString(DateTime.DATE_SHORT);
-      });
-
-      fs.writeFile('surveys.geojson', JSON.stringify(geojson));
     });
-  })
-  .catch((error) => {
-    console.log(error);
-    console.log(error.response);
-    error.response.geometry.details.forEach((detail) => {
-      console.log(detail);
+
+    geojson.features.forEach((feature) => {
+      const { properties } = feature;
+
+      for (const property in properties) {
+        if (properties.hasOwnProperty(property) && properties[property] === ' ') properties[property] = null;
+
+        if (properties.hasOwnProperty(property) && properties[property] === 'None Given') properties[property] = null;
+      }
+
+      Object.defineProperty(properties, 'Sheets', Object.getOwnPropertyDescriptor(properties, 'NumberofSh'));
+      delete properties['NumberofSh'];
+
+      Object.defineProperty(properties, 'PlatName', Object.getOwnPropertyDescriptor(properties, 'PLATID'));
+      delete properties['PLATID'];
+
+      Object.defineProperty(properties, 'Survey', Object.getOwnPropertyDescriptor(properties, 'SURVEYID'));
+      delete properties['SURVEYID'];
+
+      properties.SVY_IMAGE = `https://cityofvernonia.github.io/vernonia-surveys/surveys/${properties.SVY_IMAGE.replace(
+        '.tiff',
+        '.pdf',
+      )
+        .replace('.tif', '.pdf')
+        .replace('.jpg', '.pdf')
+        .replace('.jpeg', '.pdf')}`;
+
+      Object.defineProperty(properties, 'SurveyUrl', Object.getOwnPropertyDescriptor(properties, 'SVY_IMAGE'));
+      delete properties['SVY_IMAGE'];
+
+      if (!properties.Client) properties.Client = 'Unknown';
+
+      if (!properties.Comments) properties.Comments = 'None';
+
+      if (!properties.Firm) properties.Firm = 'Unknown';
+
+      if (properties.FileDate) {
+        properties.FileDate = DateTime.fromMillis(properties.FileDate).toUTC().toLocaleString(DateTime.DATE_SHORT);
+      } else {
+        properties.FileDate = 'Unknown';
+      }
+
+      if (properties.SurveyDate) {
+        properties.SurveyDate = DateTime.fromMillis(properties.SurveyDate).toUTC().toLocaleString(DateTime.DATE_SHORT);
+      } else {
+        properties.SurveyDate = 'Unknown';
+      }
     });
-  });
+
+    fs.writeFile('surveys.geojson', JSON.stringify(geojson));
+  } catch (error) {
+    console.log(chalk.red('create geojson error', error));
+  }
+};
+
+/**
+ * Query surveys within spatial extent.
+ */
+const downloadFeatures = async () => {
+  try {
+    const queryResult = await queryFeatures({
+      url: featureServiceUrl,
+      geometry: vernoniaSpatialExtent,
+      returnGeometry: false,
+      outFields: ['SVY_IMAGE'],
+      spatialRel: 'esriSpatialRelIntersects',
+      geometryType: 'esriGeometryPolygon',
+    });
+    console.log(chalk.yellow(`${queryResult.features.length} results`));
+    queryResult.features.forEach(fileCheck);
+    createGeoJSON();
+  } catch (error) {
+    console.log(chalk.red('Query features error', error));
+  }
+};
+
+downloadFeatures();
