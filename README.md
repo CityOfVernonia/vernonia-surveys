@@ -36,7 +36,8 @@ Or use the _SurveyUrl_ property/attribute.
     "Sheets": 2,
     "Subdivision": null,
     "SurveyId": "PP2016-04",
-    "SurveyUrl": "https://cityofvernonia.github.io/vernonia-surveys/surveys/PP2016-04.pdf"
+    "SurveyUrl": "https://cityofvernonia.github.io/vernonia-surveys/surveys/PP2016-04.pdf",
+    "Timestamp": 1454889600000
   }
 }
 ```

@@ -185,6 +185,8 @@ const createGeoJSON = async () => {
 
       if (!properties.SurveyType) properties.SurveyType = 'Unknown';
 
+      properties.Timestamp = properties.SurveyDate ? properties.SurveyDate : 0;
+
       if (properties.FileDate) {
         properties.FileDate = DateTime.fromMillis(properties.FileDate).toUTC().toLocaleString(DateTime.DATE_SHORT);
       } else {
