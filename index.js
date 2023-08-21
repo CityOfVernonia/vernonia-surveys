@@ -135,11 +135,11 @@ const createGeoJSON = async () => {
         'FileDate',
         'Firm',
         'NumberofSh',
-        'PLATID',
         'SURVEYID',
         'SVY_IMAGE',
         'SurveyDate',
         'SurveyType',
+        'Subdivisio',
       ],
       spatialRel: 'esriSpatialRelIntersects',
       geometryType: 'esriGeometryPolygon',
@@ -152,16 +152,18 @@ const createGeoJSON = async () => {
       for (const property in properties) {
         if (properties.hasOwnProperty(property) && properties[property] === ' ') properties[property] = null;
 
+        if (properties.hasOwnProperty(property) && properties[property] === '') properties[property] = null;
+
         if (properties.hasOwnProperty(property) && properties[property] === 'None Given') properties[property] = null;
       }
 
       Object.defineProperty(properties, 'Sheets', Object.getOwnPropertyDescriptor(properties, 'NumberofSh'));
       delete properties['NumberofSh'];
 
-      Object.defineProperty(properties, 'PlatName', Object.getOwnPropertyDescriptor(properties, 'PLATID'));
-      delete properties['PLATID'];
+      Object.defineProperty(properties, 'Subdivision', Object.getOwnPropertyDescriptor(properties, 'Subdivisio'));
+      delete properties['Subdivisio'];
 
-      Object.defineProperty(properties, 'Survey', Object.getOwnPropertyDescriptor(properties, 'SURVEYID'));
+      Object.defineProperty(properties, 'SurveyId', Object.getOwnPropertyDescriptor(properties, 'SURVEYID'));
       delete properties['SURVEYID'];
 
       properties.SVY_IMAGE = `https://cityofvernonia.github.io/vernonia-surveys/surveys/${properties.SVY_IMAGE.replace(
@@ -180,6 +182,8 @@ const createGeoJSON = async () => {
       if (!properties.Comments) properties.Comments = 'None';
 
       if (!properties.Firm) properties.Firm = 'Unknown';
+
+      if (!properties.SurveyType) properties.SurveyType = 'Unknown';
 
       if (properties.FileDate) {
         properties.FileDate = DateTime.fromMillis(properties.FileDate).toUTC().toLocaleString(DateTime.DATE_SHORT);
