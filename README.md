@@ -1,3 +1,5 @@
+Vernonia area survey data is now part of https://github.com/CityOfVernonia/geospatial-data.
+
 # vernonia-surveys
 
 A tool for downloading Columbia County record surveys within Vernonia spatial extent, converting survey images to PDF, and [hosting](https://cityofvernonia.github.io/vernonia-surveys/) it all for use in web applications.
